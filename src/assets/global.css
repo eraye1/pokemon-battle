@@ -53,31 +53,13 @@ html {
 }
 
 .emojiAttack.user {
-  animation: chargeAnimation 3s linear forwards,
-    moveFromUserToEnemy 0.5s ease-in-out 3s forwards;
+  animation: chargeAnimation 2s linear forwards,
+    moveFromUserToEnemy 0.5s ease-in-out 2s forwards;
 }
 
 .emojiAttack.enemy {
-  animation: chargeAnimation 3s linear forwards,
-    moveFromEnemyToUser 0.5s ease-in-out 3s forwards;
-}
-
-@keyframes moveEmojiPlayer1 {
-  from {
-    transform: translateX(0vw) translateY(0px);
-  }
-  to {
-    transform: translateX(36vh) translateY(-100px);
-  }
-}
-
-@keyframes moveEmojiPlayer2 {
-  from {
-    transform: translateX(0vw) translateY(0px);
-  }
-  to {
-    transform: translateX(-36vh) translateY(100px);
-  }
+  animation: chargeAnimation 2s linear forwards,
+    moveFromEnemyToUser 0.5s ease-in-out 2s forwards;
 }
 
 .energyBall.user {
