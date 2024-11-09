@@ -49,8 +49,9 @@ export async function getMoveFromVoiceCommand(
             Examples:
             - "Pikachu, use Thunderbolt!" -> This is a normal move that Pikachu would be expected to do. -> { name: "Thunderbolt", accuracy: 100, effect_chance: 0, power: 90, pp: 15, type: "electric", target: "enemy", damage_type: "special", id: 1 }
             - "Pikachu, use Wing Attack!" -> This is a real move, but one that Pikachu is likely very weak at, so we should reduce the strength. -> { name: "Wing Attack", accuracy: 90, effect_chance: 0, power: 10, pp: 35, type: "flying", target: "enemy", damage_type: "physical", id: 2 }
-            - "Pika pika!" -> This is not a valid move, so we should set is_valid_move to false. -> { is_valid_move: false }
-            - "Pikachu, pull out your sword and shield!" -> Funny! Swords seem mildly effective, and the shield should improve defense for the turn. -> { name: "Sword and Shield", accuracy: 100, effect_chance: 0, power: 40, pp: 10, type: "steel", target: "user", damage_type: "status", id: 3 }
+            - "Give them fentanyl!" -> Funny, maybe this would put the enemy to sleep. -> { name: "Fentanyl", accuracy: 100, effect_chance: 100, power: 0, pp: 5, type: "poison", target: "enemy", damage_type: "status", effect: "sleep", id: 3 }
+            - "Pikachu, pull out your sword and shield!" -> Funny, swords seem mildly effective, and the shield should improve defense for the turn. -> { name: "Sword and Shield", accuracy: 100, effect_chance: 0, power: 40, pp: 10, type: "steel", target: "user", damage_type: "status", id: 3 }
+            - "Shoot them with a gun!" -> A gun would probably be moderately effective. -> { name: "Gun", accuracy: 90, effect_chance: 0, power: 70, pp: 5, type: "normal", target: "enemy", damage_type: "physical", id: 4 }
             `,
         },
         {
