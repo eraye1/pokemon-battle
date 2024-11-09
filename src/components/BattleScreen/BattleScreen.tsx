@@ -68,7 +68,7 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
 
           // Only process voice command if it's the user's turn
           if (!isTurnInProgress && !isBattleEnd && user.moves) {
-            const selectedMove = await getMoveFromVoiceCommand(transcript, user.moves);
+            const selectedMove = await getMoveFromVoiceCommand(transcript, user.name, user.moves);
             if (selectedMove) {
               console.log('ChatGPT selected move:', selectedMove.name);
               setUserMove(selectedMove);
