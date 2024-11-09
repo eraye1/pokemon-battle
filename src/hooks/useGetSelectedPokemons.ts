@@ -1,26 +1,16 @@
-import { skipToken } from "@reduxjs/toolkit/query";
-import {
-  useGetPokemonByNameQuery,
-  useGetPokemonMovesetByNameQuery,
-} from "../app/api";
-import { Pokemon, Trainer } from "../types";
+import { Trainer } from "../types";
 
 const useGetSelectedPokemons = () => {
-  const query = new URLSearchParams(location.search);
-  const userTrainer = query.get("userTrainer");
-  const enemyTrainer = query.get("enemyTrainer");
+  // Get trainer data from localStorage instead of URL
+  const userTrainerJson = localStorage.getItem('userTrainer');
+  const enemyTrainerJson = localStorage.getItem('enemyTrainer');
 
-  // Parse the trainer data from the URL
-  const userTrainerData: Trainer | null = userTrainer ? JSON.parse(decodeURIComponent(userTrainer)) : null;
-  const enemyTrainerData: Trainer | null = enemyTrainer ? JSON.parse(decodeURIComponent(enemyTrainer)) : null;
-
-  // Get the first Pokemon from each trainer's team
-  const userPokemon = userTrainerData?.team[0];
-  const enemyPokemon = enemyTrainerData?.team[0];
+  const userTrainerData: Trainer | null = userTrainerJson ? JSON.parse(userTrainerJson) : null;
+  const enemyTrainerData: Trainer | null = enemyTrainerJson ? JSON.parse(enemyTrainerJson) : null;
 
   return {
-    userPokemon,
-    enemyPokemon,
+    userTrainer: userTrainerData,
+    enemyTrainer: enemyTrainerData
   };
 };
 

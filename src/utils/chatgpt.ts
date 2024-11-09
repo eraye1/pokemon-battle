@@ -23,14 +23,18 @@ const MoveSchema = z.object({
 const ResultSchema = z.object({
   thinking: z.string(),
   intends_move: z.boolean(),
+  intends_switch_pokemon: z.boolean(),
+  intends_pokemon_to_switch_to: z.string().optional(),
   move: MoveSchema.optional(),
 });
+
+type Result = z.infer<typeof ResultSchema>;
 
 export async function getMoveFromVoiceCommand(
   voiceInput: string,
   activePokemon: string,
   availableMoves: Move[]
-): Promise<Move | undefined> {
+): Promise<Result | undefined> {
   try {
     const response = await openai.beta.chat.completions.parse({
       model: "gpt-4o-2024-08-06",
@@ -43,6 +47,7 @@ export async function getMoveFromVoiceCommand(
 
             First, think about what the user's input and intent likely is. Write a concise 1 sentence max summary of it.
 
+            If the voice command is intended to switch to a different Pokemon, set intends_switch_pokemon to true and set intends_pokemon_to_switch_to to the name of the Pokemon they intend to switch to.
             If the voice command does not appear to be intended as a command, for example if it is unrelated to the battle, set intends_move to false.
             Otherwise, be creative when creating the move object, but make sure it is a valid move object. Here is an example of a valid move object:
 
@@ -52,6 +57,8 @@ export async function getMoveFromVoiceCommand(
             - "Give them fentanyl!" -> Funny, maybe this would put the enemy to sleep. -> { name: "Fentanyl", accuracy: 100, effect_chance: 100, power: 0, pp: 5, type: "poison", target: "enemy", damage_type: "status", effect: "sleep", id: 3 }
             - "Pikachu, pull out your sword and shield!" -> Funny, swords seem mildly effective, and the shield should improve defense for the turn. -> { name: "Sword and Shield", accuracy: 100, effect_chance: 0, power: 40, pp: 10, type: "steel", target: "user", damage_type: "status", id: 3 }
             - "Shoot them with a gun!" -> A gun would probably be moderately effective. -> { name: "Gun", accuracy: 90, effect_chance: 0, power: 70, pp: 5, type: "normal", target: "enemy", damage_type: "physical", id: 4 }
+            - "Pikachu, come back" -> The trainer intends to switch pokemon.
+            
             `,
         },
         {
@@ -68,7 +75,7 @@ export async function getMoveFromVoiceCommand(
 
     console.log("ChatGPT response:", data);
 
-    return data.intends_move ? data.move : undefined;
+    return data ? data : undefined;
   } catch (error) {
     console.error("Error getting move from ChatGPT:", error);
     return undefined;
