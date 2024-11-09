@@ -173,12 +173,12 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
           const transcript = event.results[i][0].transcript;
           console.log('Voice input:', transcript);
 
-          // Only process voice command if it's the user's turn
-          if (!isTurnInProgress && !isBattleEnd && user.moves) {
+          // Only process voice command if it's the user's turn and swap menu is not open
+          if (!isTurnInProgress && !isBattleEnd && user.moves && !showSwapMenu) {
             const result = await getMoveFromVoiceCommand(transcript, user.name, user.moves);
             if (result && result.intends_switch_pokemon) {
               if (!result.intends_pokemon_to_switch_to) {
-                setForcedSwap(true);
+                setForcedSwap(false); // Don't force swap if it's voluntary
                 setShowSwapMenu(true);
               } else {
                 handleSwapPokemon(userTrainer.team.findIndex((pokemon) => pokemon.name === result.intends_pokemon_to_switch_to));
@@ -201,7 +201,7 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
     return () => {
       recognition.stop();
     };
-  }, [isTurnInProgress, isBattleEnd, user.moves]);
+  }, [isTurnInProgress, isBattleEnd, user.moves, showSwapMenu]);
 
 
   useEffect(() => {
