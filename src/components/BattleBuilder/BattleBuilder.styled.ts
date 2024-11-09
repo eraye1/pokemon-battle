@@ -1,59 +1,48 @@
 import styled from "styled-components";
 
 export const StyledBattleBuilderContainer = styled.div`
-  padding: 1rem;
-  min-height: 100dvh;
-  max-height: 100dvh;
-  width: 100vw;
-  max-width: 100vw;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  background-color: #212121;
-  gap: 12px;
-
+  height: 100vh;
+  padding: 1rem;
+  
   h1 {
-    max-width: 400px;
     text-align: center;
-    font-family: "Pokemon";
-    font-size: 4rem;
-    line-height: 1.1;
-    margin: 0;
-    color: #ffcc00;
-    -webkit-text-stroke-width: 2px;
-    -webkit-text-stroke-color: #0075be;
+    margin-bottom: 1rem;
   }
-  .container {
-    display: grid;
-    gap: 16px;
-    grid-template-columns: 1fr 250px 2px 250px 1fr;
-    width: 100%;
-    max-width: 1400px;
-    flex: 1;
 
-    .hr {
-      height: 50%;
-      width: 100%;
-      background-color: transparent;
-      align-self: center;
-      border: 2px dashed #de0030;
-    }
+  .container {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    overflow: hidden;
+  }
+
+  .hr {
+    width: 2px;
+    background: #ccc;
+    margin: 0 1rem;
   }
 
   .battle-button {
-    border: 0;
-    outline: 0;
-    color: white;
-    background-color: #de0030;
+    margin-top: 1rem;
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
     border-radius: 8px;
-    font-size: 16px;
-    padding: 16px;
+    background: #e3350d;
+    color: white;
+    border: none;
     cursor: pointer;
-    font-weight: bold;
-    font-family: "Raleway", sans-serif;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) {
+      background: #ff4422;
+      transform: translateY(-2px);
+    }
 
     &:disabled {
-      opacity: 0.3;
+      background: #ccc;
       cursor: not-allowed;
     }
   }

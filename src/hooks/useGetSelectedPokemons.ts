@@ -3,49 +3,21 @@ import {
   useGetPokemonByNameQuery,
   useGetPokemonMovesetByNameQuery,
 } from "../app/api";
-import { Pokemon } from "../types";
+import { Pokemon, Trainer } from "../types";
 
 const useGetSelectedPokemons = () => {
   const query = new URLSearchParams(location.search);
-  const user = query.get("user");
-  const enemy = query.get("enemy");
+  const userTrainer = query.get("userTrainer");
+  const enemyTrainer = query.get("enemyTrainer");
 
-  const { data: userPokemonWithoutMoves } = useGetPokemonByNameQuery(
-    user ?? skipToken
-  );
-  const { data: enemyPokemonWithoutMoves } = useGetPokemonByNameQuery(
-    enemy ?? skipToken
-  );
+  // Parse the trainer data from the URL
+  const userTrainerData: Trainer | null = userTrainer ? JSON.parse(decodeURIComponent(userTrainer)) : null;
+  const enemyTrainerData: Trainer | null = enemyTrainer ? JSON.parse(decodeURIComponent(enemyTrainer)) : null;
 
-  const { data: userPokemonMoveset } = useGetPokemonMovesetByNameQuery(
-    userPokemonWithoutMoves
-      ? {
-          name: userPokemonWithoutMoves.name,
-          moves: userPokemonWithoutMoves.moveNames,
-        }
-      : skipToken
-  );
-  const { data: enemyPokemonMoveset } = useGetPokemonMovesetByNameQuery(
-    enemyPokemonWithoutMoves
-      ? {
-          name: enemyPokemonWithoutMoves.name,
-          moves: enemyPokemonWithoutMoves.moveNames,
-        }
-      : skipToken
-  );
+  // Get the first Pokemon from each trainer's team
+  const userPokemon = userTrainerData?.team[0];
+  const enemyPokemon = enemyTrainerData?.team[0];
 
-  const userPokemon = userPokemonMoveset
-    ? ({
-        ...userPokemonWithoutMoves,
-        moves: userPokemonMoveset,
-      } as Pokemon)
-    : userPokemonWithoutMoves;
-  const enemyPokemon = enemyPokemonMoveset
-    ? ({
-        ...enemyPokemonWithoutMoves,
-        moves: enemyPokemonMoveset,
-      } as Pokemon)
-    : enemyPokemonWithoutMoves;
   return {
     userPokemon,
     enemyPokemon,

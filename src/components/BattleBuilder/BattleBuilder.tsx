@@ -1,56 +1,47 @@
 import React, { useState } from "react";
-import { Player } from "../../types";
-import PokemonList from "../PokemonList";
-import PokemonShowcase from "../PokemonShowcase";
+import { Player, Trainer } from "../../types";
+import TrainerList from "../TrainerList/TrainerList";
 import { StyledBattleBuilderContainer } from "./BattleBuilder.styled";
 
 interface BattleBuilderProps {
-  onBattleStart: (userPokemonName: string, enemyPokemonName: string) => void;
+  onBattleStart: (userTrainer: Trainer, enemyTrainer: Trainer) => void;
 }
 
 const BattleBuilder: React.FC<BattleBuilderProps> = ({ onBattleStart }) => {
-  const [userSelectedPokemonName, setUserSelectedPokemonName] =
-    useState<string>();
-  const [enemySelectedPokemonName, setEnemySelectedPokemonName] =
-    useState<string>();
+  const [userSelectedTrainer, setUserSelectedTrainer] = useState<Trainer>();
+  const [enemySelectedTrainer, setEnemySelectedTrainer] = useState<Trainer>();
+
+  const handleBattleStart = () => {
+    if (userSelectedTrainer && enemySelectedTrainer) {
+      // Add trainers to URL
+      const searchParams = new URLSearchParams();
+      searchParams.set("userTrainer", encodeURIComponent(JSON.stringify(userSelectedTrainer)));
+      searchParams.set("enemyTrainer", encodeURIComponent(JSON.stringify(enemySelectedTrainer)));
+      window.history.pushState({}, '', `?${searchParams.toString()}`);
+      
+      onBattleStart(userSelectedTrainer, enemySelectedTrainer);
+    }
+  };
 
   return (
     <StyledBattleBuilderContainer>
       <h1>Pokémon Battle</h1>
       <div className="container">
-        <PokemonShowcase
+        <TrainerList
           player={Player.User}
-          pokemonName={userSelectedPokemonName}
-        />
-        <PokemonList
-          alreadySelectedPokemon={{
-            player: Player.Enemy,
-            pokemonName: enemySelectedPokemonName,
-          }}
-          player={Player.User}
-          onPokemonSelection={setUserSelectedPokemonName}
+          onTrainerSelection={setUserSelectedTrainer}
+          selectedOpponentId={enemySelectedTrainer?.id}
         />
         <div className="hr"></div>
-        <PokemonList
-          alreadySelectedPokemon={{
-            player: Player.User,
-            pokemonName: userSelectedPokemonName,
-          }}
+        <TrainerList
           player={Player.Enemy}
-          onPokemonSelection={setEnemySelectedPokemonName}
-        />
-        <PokemonShowcase
-          player={Player.Enemy}
-          pokemonName={enemySelectedPokemonName}
+          onTrainerSelection={setEnemySelectedTrainer}
+          selectedOpponentId={userSelectedTrainer?.id}
         />
       </div>
       <button
-        disabled={!userSelectedPokemonName || !enemySelectedPokemonName}
-        onClick={() => {
-          if (userSelectedPokemonName && enemySelectedPokemonName) {
-            onBattleStart(userSelectedPokemonName, enemySelectedPokemonName);
-          }
-        }}
+        disabled={!userSelectedTrainer || !enemySelectedTrainer}
+        onClick={handleBattleStart}
         className="battle-button"
       >
         Battle now!
