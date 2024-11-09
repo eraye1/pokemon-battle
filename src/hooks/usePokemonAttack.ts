@@ -87,7 +87,8 @@ const usePokemonAttack = (
         damage.type === "status" ? "status" : "damage",
         true,
         damage.type,
-        move.type
+        move.type,
+        move.name
       );
 
     if (damage.value || (!damage.value && !damage.effectiveness)) {
