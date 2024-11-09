@@ -43,6 +43,25 @@ html {
   );
 }
 
+.emojiAttack {
+  position: absolute;
+  font-size: 4rem;
+  z-index: 100;
+  left: 50px;
+  top: 0;
+  transform: scale(0); /* Initially hide the emoji */
+}
+
+.emojiAttack.user {
+  animation: chargeAnimation 2s linear forwards,
+    moveFromUserToEnemy 0.5s ease-in-out 2s forwards;
+}
+
+.emojiAttack.enemy {
+  animation: chargeAnimation 2s linear forwards,
+    moveFromEnemyToUser 0.5s ease-in-out 2s forwards;
+}
+
 .energyBall.user {
   animation: chargeAnimation 2s linear forwards,
     moveFromUserToEnemy 0.5s ease-in-out 2s forwards;

@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { Player, Pokemon } from "../types";
 import { findColor } from "../utils/color";
 import { wait } from "../utils/helper";
+import { getEmojiFromMoveName } from "../utils/chatgpt";
 
 const useMoveAnimation = (
   userElement: HTMLElement | null,
@@ -10,13 +11,16 @@ const useMoveAnimation = (
   const executeSpecialAttackAnimation = async (
     player: Player,
     type: string,
-    container: HTMLElement
+    container: HTMLElement,
+    moveName: string
   ) => {
-    const animationColor = findColor(type);
-    const r = document.querySelector(":root") as HTMLElement;
-    r.style.setProperty("--animation-color", animationColor);
+    const emoji = await getEmojiFromMoveName(moveName);
+    
     const moveAnimationContainer = document.createElement("div");
-    moveAnimationContainer.classList.add("energyBall", player);
+    moveAnimationContainer.classList.add("emojiAttack", player.toLowerCase());
+    console.log(moveAnimationContainer.classList);
+    moveAnimationContainer.textContent = emoji;
+    
     container.appendChild(moveAnimationContainer);
     await wait(2500);
     container.removeChild(moveAnimationContainer);
@@ -36,7 +40,8 @@ const useMoveAnimation = (
       targetAnimationType: "damage" | "status",
       isPokemonMove?: boolean,
       damageType?: string,
-      moveType?: string
+      moveType?: string,
+      moveName?: string
     ) => {
       let attackerElement = userElement;
       let defenderElement = enemyElement;
@@ -59,7 +64,8 @@ const useMoveAnimation = (
                 ? Player.User
                 : Player.Enemy,
               moveType ?? "normal",
-              attackerElement
+              attackerElement,
+              moveName
             );
             break;
           default:

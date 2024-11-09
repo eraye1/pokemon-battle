@@ -73,6 +73,7 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
     closeModal,
     setUserHealth,
     setEnemyHealth,
+    setText
   } = useBattleSequence({
     user,
     enemy,

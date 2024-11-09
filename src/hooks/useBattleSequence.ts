@@ -164,6 +164,7 @@ const useBattleSequence = ({
     closeModal,
     setUserHealth,
     setEnemyHealth,
+    setText,
   };
 };
 
