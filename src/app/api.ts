@@ -36,6 +36,9 @@ export const pokemonApi = createApi({
             pokemon.sprites.versions["generation-v"]["black-white"]
               .front_default,
         },
+        cries: {
+          latest: pokemon.cries.latest,
+        },
         type: pokemon.types.map(
           (type: { type: { name: string } }) => type.type.name
         ),
