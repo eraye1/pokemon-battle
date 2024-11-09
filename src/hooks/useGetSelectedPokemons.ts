@@ -1,13 +1,12 @@
 import { Trainer } from "../types";
 
 const useGetSelectedPokemons = () => {
-  const query = new URLSearchParams(location.search);
-  const userTrainer = query.get("userTrainer");
-  const enemyTrainer = query.get("enemyTrainer");
+  // Get trainer data from localStorage instead of URL
+  const userTrainerJson = localStorage.getItem('userTrainer');
+  const enemyTrainerJson = localStorage.getItem('enemyTrainer');
 
-  // Parse the trainer data from the URL
-  const userTrainerData: Trainer | null = userTrainer ? JSON.parse(decodeURIComponent(userTrainer)) : null;
-  const enemyTrainerData: Trainer | null = enemyTrainer ? JSON.parse(decodeURIComponent(enemyTrainer)) : null;
+  const userTrainerData: Trainer | null = userTrainerJson ? JSON.parse(userTrainerJson) : null;
+  const enemyTrainerData: Trainer | null = enemyTrainerJson ? JSON.parse(enemyTrainerJson) : null;
 
   return {
     userTrainer: userTrainerData,

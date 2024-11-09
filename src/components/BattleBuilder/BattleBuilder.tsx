@@ -13,11 +13,9 @@ const BattleBuilder: React.FC<BattleBuilderProps> = ({ onBattleStart }) => {
 
   const handleBattleStart = () => {
     if (userSelectedTrainer && enemySelectedTrainer) {
-      // Add trainers to URL
-      const searchParams = new URLSearchParams();
-      searchParams.set("userTrainer", encodeURIComponent(JSON.stringify(userSelectedTrainer)));
-      searchParams.set("enemyTrainer", encodeURIComponent(JSON.stringify(enemySelectedTrainer)));
-      window.history.pushState({}, '', `?${searchParams.toString()}`);
+      // Store trainers in localStorage instead of URL
+      localStorage.setItem('userTrainer', JSON.stringify(userSelectedTrainer));
+      localStorage.setItem('enemyTrainer', JSON.stringify(enemySelectedTrainer));
       
       onBattleStart(userSelectedTrainer, enemySelectedTrainer);
     }

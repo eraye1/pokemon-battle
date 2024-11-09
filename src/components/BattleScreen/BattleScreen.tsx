@@ -37,14 +37,16 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
   const [userTeamState, setUserTeamState] = useState<PokemonBattleState[]>(
     userTrainer.team.map(pokemon => ({
       health: pokemon.maxHealth,
-      maxHealth: pokemon.maxHealth
+      maxHealth: pokemon.maxHealth,
+      sideEffect: undefined
     }))
   );
 
   const [enemyTeamState, setEnemyTeamState] = useState<PokemonBattleState[]>(
     enemyTrainer.team.map(pokemon => ({
       health: pokemon.maxHealth,
-      maxHealth: pokemon.maxHealth
+      maxHealth: pokemon.maxHealth,
+      sideEffect: undefined
     }))
   );
 
@@ -53,7 +55,9 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
   const enemy = enemyTrainer.team[enemyPokemonIndex];
 
   const [showSwapMenu, setShowSwapMenu] = useState(false);
-  const [enemyMove, setEnemyMove] = useState<Move | undefined>();
+  const [enemyMove, setEnemyMove] = useState<Move | undefined>(
+    minmaxMoveDecision(enemy.moves ?? [], enemy, user)
+  );
   const [userMove, setUserMove] = useState<Move>();
   const userRef = useRef<HTMLDivElement>(null);
   const enemyRef = useRef<HTMLDivElement>(null);
@@ -67,47 +71,85 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
     isTurnInProgress,
     isBattleEnd,
     closeModal,
+    setUserHealth,
+    setEnemyHealth,
   } = useBattleSequence({
     user,
     enemy,
-    setEnemyMove,
     userMove,
-    setUserMove,
     enemyMove,
+    setUserMove,
+    setEnemyMove,
     userElement: userRef.current,
     enemyElement: enemyRef.current,
-    onHealthChange: (player, newHealth) => {
-      if (player === Player.User) {
-        const newTeamState = [...userTeamState];
-        newTeamState[userPokemonIndex].health = newHealth;
-        setUserTeamState(newTeamState);
-      } else {
-        const newTeamState = [...enemyTeamState];
-        newTeamState[enemyPokemonIndex].health = newHealth;
-        setEnemyTeamState(newTeamState);
-      }
-    },
-    onStatusChange: (player, newStatus) => {
-      if (player === Player.User) {
-        const newTeamState = [...userTeamState];
-        newTeamState[userPokemonIndex].sideEffect = newStatus;
-        setUserTeamState(newTeamState);
-      } else {
-        const newTeamState = [...enemyTeamState];
-        newTeamState[enemyPokemonIndex].sideEffect = newStatus;
-        setEnemyTeamState(newTeamState);
+    userTeamState,
+    enemyTeamState,
+  });
+
+  // Update team state when health changes from battle sequence
+  useEffect(() => {
+    if (userHealth !== undefined) {
+      const newTeamState = [...userTeamState];
+      newTeamState[userPokemonIndex].health = userHealth;
+      setUserTeamState(newTeamState);
+    }
+  }, [userHealth, userPokemonIndex]);
+
+  useEffect(() => {
+    if (enemyHealth !== undefined) {
+      const newTeamState = [...enemyTeamState];
+      newTeamState[enemyPokemonIndex].health = enemyHealth;
+      setEnemyTeamState(newTeamState);
+    }
+  }, [enemyHealth, enemyPokemonIndex]);
+
+  // Update team state when side effects change
+  useEffect(() => {
+    if (userSideEffect) {
+      const newTeamState = [...userTeamState];
+      newTeamState[userPokemonIndex].sideEffect = userSideEffect;
+      setUserTeamState(newTeamState);
+    }
+  }, [userSideEffect, userPokemonIndex]);
+
+  useEffect(() => {
+    if (enemySideEffect) {
+      const newTeamState = [...enemyTeamState];
+      newTeamState[enemyPokemonIndex].sideEffect = enemySideEffect;
+      setEnemyTeamState(newTeamState);
+    }
+  }, [enemySideEffect, enemyPokemonIndex]);
+
+  // Add state to track if we're forcing a swap due to fainted Pokemon
+  const [forcedSwap, setForcedSwap] = useState(false);
+
+  // Check if current Pokemon has fainted
+  useEffect(() => {
+    if (userTeamState[userPokemonIndex].health <= 0 && !isBattleEnd) {
+      // Check if there are any non-fainted Pokemon left
+      const hasAvailablePokemon = userTeamState.some((pokemon, index) => 
+        pokemon.health > 0 && index !== userPokemonIndex
+      );
+
+      if (hasAvailablePokemon) {
+        setForcedSwap(true);
+        setShowSwapMenu(true);
       }
     }
-  });
+  }, [userTeamState, userPokemonIndex, isBattleEnd]);
 
   const handleSwapPokemon = (newIndex: number) => {
     if (isTurnInProgress || newIndex === userPokemonIndex) return;
+    if (userTeamState[newIndex].health <= 0) return; // Can't swap to fainted Pokemon
     
+    // First set the enemy move
+    setEnemyMove(minmaxMoveDecision(enemy.moves ?? [], enemy, userTrainer.team[newIndex]));
+    
+    // Then update the active Pokemon index
     setUserPokemonIndex(newIndex);
     setShowSwapMenu(false);
-    
-    // Enemy gets a free attack when you swap
-    setEnemyMove(minmaxMoveDecision(enemy.moves ?? [], enemy, userTrainer.team[newIndex]));
+    setForcedSwap(false);
+    setUserHealth(userTeamState[newIndex].health);
   };
 
   useEffect(() => {
@@ -132,8 +174,8 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
           console.log('Voice input:', transcript);
 
           // Only process voice command if it's the user's turn
-          if (!isTurnInProgress && !isBattleEnd) {
-            const selectedMove = await getMoveFromVoiceCommand(transcript, user.name);
+          if (!isTurnInProgress && !isBattleEnd && user.moves) {
+            const selectedMove = await getMoveFromVoiceCommand(transcript, user.name, user.moves);
             if (selectedMove) {
               console.log('ChatGPT selected move:', selectedMove.name);
               setUserMove(selectedMove);
@@ -153,6 +195,30 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
       recognition.stop();
     };
   }, [isTurnInProgress, isBattleEnd, user.moves]);
+
+  // Add effect to handle enemy Pokemon fainting
+  useEffect(() => {
+    if (enemyTeamState[enemyPokemonIndex].health <= 0 && !isBattleEnd) {
+      // Find the next non-fainted Pokemon in enemy's team
+      const nextPokemonIndex = enemyTeamState.findIndex(
+        (pokemon, index) => pokemon.health > 0 && index !== enemyPokemonIndex
+      );
+
+      if (nextPokemonIndex !== -1) {
+        // Set a small delay to make the switch visible
+        setTimeout(() => {
+          setEnemyPokemonIndex(nextPokemonIndex);
+          setText(`${enemy.name} fainted! Enemy sent out ${enemyTrainer.team[nextPokemonIndex].name}!`);
+          // Enemy gets a free attack with their new Pokemon
+          setEnemyMove(minmaxMoveDecision(
+            enemyTrainer.team[nextPokemonIndex].moves ?? [], 
+            enemyTrainer.team[nextPokemonIndex], 
+            user
+          ));
+        }, 1000);
+      }
+    }
+  }, [enemyTeamState, enemyPokemonIndex, isBattleEnd, enemy.name, enemyTrainer.team, user]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -179,7 +245,7 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
         name={user.name}
         level={100}
         health={userTeamState[userPokemonIndex].health}
-        maxHealth={user.maxHealth}
+        maxHealth={userTeamState[userPokemonIndex].maxHealth}
         sideEffect={userTeamState[userPokemonIndex].sideEffect?.name}
       />
       <div className={`enemy ${enemy.name}`} id={Player.Enemy} ref={enemyRef}>
@@ -206,7 +272,13 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
           teamState={userTeamState}
           currentIndex={userPokemonIndex}
           onSelect={handleSwapPokemon}
-          onClose={() => setShowSwapMenu(false)}
+          onClose={() => {
+            // Only allow closing if it's not a forced swap
+            if (!forcedSwap) {
+              setShowSwapMenu(false);
+            }
+          }}
+          forcedSwap={forcedSwap}
         />
       )}
     </StyledBattleScreenContainer>
