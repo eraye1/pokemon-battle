@@ -3,9 +3,10 @@ import { zodResponseFormat } from "openai/helpers/zod";
 import { z } from "zod";
 import { Move } from "../types";
 
-const openai = new OpenAI(
-  {apiKey: import.meta.env.VITE_OPENAI_SECRET as string, dangerouslyAllowBrowser: true},
-);
+const openai = new OpenAI({
+  apiKey: import.meta.env.VITE_OPENAI_SECRET as string,
+  dangerouslyAllowBrowser: true,
+});
 
 const MoveSchema = z.object({
   name: z.string(),
@@ -78,6 +79,54 @@ export async function getMoveFromVoiceCommand(
     return data ? data : undefined;
   } catch (error) {
     console.error("Error getting move from ChatGPT:", error);
+    return undefined;
+  }
+}
+
+const EmojiSchema = z.object({
+  emoji: z.string(),
+});
+
+export async function getEmojiFromMoveName(
+  moveName: string
+): Promise<string | undefined> {
+  try {
+    const response = await openai.beta.chat.completions.parse({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: `You are a Pokemon battle assistant. You will receive a move name and should provide the emoji that best represents it. 
+
+            Examples:
+            - "Thunderbolt" -> ⚡
+            - "Wing Attack" -> 🦅
+            - "Fentanyl" -> 💉
+            - "Sword and Shield" -> 🛡️
+            - "Gun" -> 🔫
+            - "Hyper Beam" -> 🌈
+            - "Earthquake" -> 🌍
+            - "Fire Blast" -> 🔥
+            - "Ice Beam" -> ❄️
+        `,
+        },
+        {
+          role: "user",
+          content: moveName,
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 16,
+      response_format: zodResponseFormat(EmojiSchema, "emoji"),
+    });
+
+    const data = response.choices[0].message.parsed;
+
+    console.log("ChatGPT emoji response:", data);
+
+    return data ? data.emoji : undefined;
+  } catch (error) {
+    console.error("Error getting emoji from ChatGPT:", error);
     return undefined;
   }
 }
