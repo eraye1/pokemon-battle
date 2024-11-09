@@ -98,3 +98,11 @@ export type Condition =
   | Sleep
   | Confusion
   | UnknownEffect;
+
+export interface Trainer {
+  id: string;
+  name: string;
+  sprite: string;
+  description: string;
+  team: Pokemon[];
+}
