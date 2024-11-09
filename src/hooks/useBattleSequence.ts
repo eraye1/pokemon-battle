@@ -15,6 +15,8 @@ const useBattleSequence = ({
   userMove,
   userElement,
   enemyElement,
+  userTeamState,
+  enemyTeamState,
 }: {
   user: Pokemon;
   enemy: Pokemon;
@@ -33,7 +35,7 @@ const useBattleSequence = ({
     "first-half"
   );
 
-  const { adjustHealth, userHealth, enemyHealth } = useAdjustHealth(
+  const { adjustHealth, userHealth, enemyHealth, setUserHealth, setEnemyHealth } = useAdjustHealth(
     user,
     enemy
   );
@@ -76,8 +78,10 @@ const useBattleSequence = ({
     setIsAttackPhaseEnded,
     isAttackPhaseEnded,
     handleEndOfTurnSideEffect,
+    userTeamState,
+    enemyTeamState,
     userSideEffect,
-    enemySideEffect
+    enemySideEffect,
   );
 
   useEffect(() => {
@@ -158,6 +162,8 @@ const useBattleSequence = ({
     isTurnInProgress,
     isBattleEnd,
     closeModal,
+    setUserHealth,
+    setEnemyHealth,
   };
 };
 

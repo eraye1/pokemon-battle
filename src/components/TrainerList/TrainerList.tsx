@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Player, Pokemon, Trainer } from "../../types";
 import { StyledTrainerList } from "./TrainerList.styled";
-import { useGetPokemonByNameQuery } from "../../app/api";
+import { useGetPokemonByNameQuery, useGetPokemonMovesetByNameQuery } from "../../app/api";
+import { skipToken } from "@reduxjs/toolkit/query";
 
 interface TrainerListProps {
   player: Player;
@@ -43,8 +44,21 @@ export const TrainerList: React.FC<TrainerListProps> = ({
   // Call hooks for each Pokemon in each trainer's team
   const trainers = TRAINERS_CONFIG.map(trainer => {
     const team = trainer.teamNames.map(name => {
-      const { data: pokemon, isLoading } = useGetPokemonByNameQuery(name);
-      return { pokemon, isLoading };
+      const { data: pokemon, isLoading: isPokemonLoading } = useGetPokemonByNameQuery(name);
+      
+      // Only fetch moves if we have the Pokemon data
+      const { data: moves, isLoading: isMovesLoading } = useGetPokemonMovesetByNameQuery(
+        pokemon ? {
+          name: pokemon.name,
+          moves: pokemon.moveNames,
+        } : skipToken
+      );
+
+      return { 
+        pokemon, 
+        moves,
+        isLoading: isPokemonLoading || isMovesLoading 
+      };
     });
     return { ...trainer, team };
   });
@@ -62,7 +76,10 @@ export const TrainerList: React.FC<TrainerListProps> = ({
   const processedTrainers: Trainer[] = trainers.map(trainer => ({
     ...trainer,
     team: trainer.team
-      .map(({ pokemon }) => pokemon)
+      .map(({ pokemon, moves }) => pokemon && moves ? {
+        ...pokemon,
+        moves
+      } : undefined)
       .filter((pokemon): pokemon is Pokemon => pokemon !== undefined)
   }));
 
