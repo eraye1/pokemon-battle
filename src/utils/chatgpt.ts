@@ -28,8 +28,7 @@ const ResultSchema = z.object({
 
 export async function getMoveFromVoiceCommand(
   voiceInput: string,
-  activePokemon: string,
-  availableMoves: Move[]
+  activePokemon: string
 ): Promise<Move | undefined> {
   try {
     const response = await openai.beta.chat.completions.parse({
