@@ -203,6 +203,21 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
     };
   }, [isTurnInProgress, isBattleEnd, user.moves]);
 
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.play();
+    }
+
+    return () => {
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+    };
+  }, []);
+
   // Add effect to handle enemy Pokemon fainting
   useEffect(() => {
     if (enemyTeamState[enemyPokemonIndex].health <= 0 && !isBattleEnd) {
@@ -212,17 +227,23 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
       );
 
       if (nextPokemonIndex !== -1) {
-        // Set a small delay to make the switch visible
-        setTimeout(() => {
+        const sequence = async () => {
+          // First show faint message
+          await new Promise(resolve => setTimeout(resolve, 2000));
+
+          // Finally switch the Pokemon
           setEnemyPokemonIndex(nextPokemonIndex);
-          setText(`${enemy.name} fainted! Enemy sent out ${enemyTrainer.team[nextPokemonIndex].name}!`);
+          setEnemyHealth(enemyTeamState[nextPokemonIndex].health);
+          
           // Enemy gets a free attack with their new Pokemon
           setEnemyMove(minmaxMoveDecision(
             enemyTrainer.team[nextPokemonIndex].moves ?? [], 
             enemyTrainer.team[nextPokemonIndex], 
             user
           ));
-        }, 1000);
+        };
+
+        sequence();
       }
     }
   }, [enemyTeamState, enemyPokemonIndex, isBattleEnd, enemy.name, enemyTrainer.team, user]);
