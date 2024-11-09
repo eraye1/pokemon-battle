@@ -25,6 +25,7 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
   const [userMove, setUserMove] = useState<Move>();
   const userRef = useRef<HTMLDivElement>(null);
   const enemyRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
   const {
     userHealth,
     enemyHealth,
@@ -89,8 +90,23 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
     };
   }, [isTurnInProgress, isBattleEnd, user.moves]);
 
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.play();
+    }
+
+    return () => {
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+    };
+  }, []);
+
   return (
     <StyledBattleScreenContainer>
+      <audio ref={audioRef} src="../../public/trainer_battle.mp3" loop />
       <div className={`user ${user.name}`} id={Player.User} ref={userRef}>
         <img src={user.sprites.battle_back} alt="" />
       </div>
