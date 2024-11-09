@@ -9,7 +9,7 @@ export async function generateSoundEffect(
 ) {
     console.time('generateSoundEffect');
     
-    const audio = await elevenlabs.textToSoundEffects.generate({
+    const audio = await elevenlabs.textToSoundEffects.convert({
         text: `A pokemon used the move ${moveName} !`,
         durationSeconds: 3,
     });

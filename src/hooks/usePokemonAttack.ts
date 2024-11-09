@@ -52,13 +52,45 @@ const usePokemonAttack = (
     }
   };
 
-  const handleSoundEffect = async (
-    move: Move,
-  ) => {
-    const audio = await generateSoundEffect(move.name);
-    audio.play();
-  }
-
+  const handleSoundEffect = async (move: Move) => {
+    try {
+      const audioStream = await generateSoundEffect(move.name);
+      const readableStream = audioStream.readableStream;
+      
+      // Check if stream is locked before proceeding
+      if (readableStream.locked) {
+        console.log('Stream is locked, waiting for previous reader to finish');
+        // Either wait for previous reader or handle the locked state
+        return;
+      }
+      
+      // Create a reader and store it
+      const reader = readableStream.getReader();
+      
+      try {
+        const chunks = [];
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          if (value) chunks.push(value);
+        }
+        
+        const blob = new Blob(chunks, { type: 'audio/mpeg' });
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        await audio.play();
+        
+        // Clean up
+        URL.revokeObjectURL(url);
+      } finally {
+        // Always release the lock when done
+        reader.releaseLock();
+      }
+    } catch (error) {
+      console.error('Error handling sound effect:', error);
+    }
+  };
+  
   const handleAttack = async (
     attacker: Pokemon,
     defender: Pokemon,
