@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import useGetSelectedPokemons from "../../hooks/useGetSelectedPokemons";
+import { skipToken } from "@reduxjs/toolkit/query";
 import { useGetPokemonMovesetByNameQuery } from "../../app/api";
 import { wait } from "../../utils/helper";
 import { BattleScreen } from "../BattleScreen/BattleScreen";
@@ -13,33 +14,7 @@ interface BattleDialogProps {
 const BattleDialog: React.FC<BattleDialogProps> = ({ onBattleEnd }) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [showBattleScreen, setShowBattleScreen] = useState(false);
-  const { userPokemon, enemyPokemon } = useGetSelectedPokemons();
-
-  // Fetch moves for both Pokemon
-  const { data: userMoves } = useGetPokemonMovesetByNameQuery(
-    userPokemon ? {
-      name: userPokemon.name,
-      moves: userPokemon.moveNames,
-    } : skipToken
-  );
-
-  const { data: enemyMoves } = useGetPokemonMovesetByNameQuery(
-    enemyPokemon ? {
-      name: enemyPokemon.name,
-      moves: enemyPokemon.moveNames,
-    } : skipToken
-  );
-
-  // Combine Pokemon data with their moves
-  const userPokemonWithMoves = userPokemon && userMoves ? {
-    ...userPokemon,
-    moves: userMoves
-  } : undefined;
-
-  const enemyPokemonWithMoves = enemyPokemon && enemyMoves ? {
-    ...enemyPokemon,
-    moves: enemyMoves
-  } : undefined;
+  const { userTrainer, enemyTrainer } = useGetSelectedPokemons();
 
   useEffect(() => {
     if (dialogRef.current) {
@@ -51,13 +26,17 @@ const BattleDialog: React.FC<BattleDialogProps> = ({ onBattleEnd }) => {
     }
   }, []);
 
+  if (!userTrainer || !enemyTrainer) {
+    return null;
+  }
+
   return (
     <StyledBattleDialog ref={dialogRef}>
-      <IntroScreen user={userPokemon} enemy={enemyPokemon} />
-      {showBattleScreen && userPokemonWithMoves && enemyPokemonWithMoves && (
+      <IntroScreen user={userTrainer.team[0]} enemy={enemyTrainer.team[0]} />
+      {showBattleScreen && (
         <BattleScreen
-          user={userPokemonWithMoves}
-          enemy={enemyPokemonWithMoves}
+          userTrainer={userTrainer}
+          enemyTrainer={enemyTrainer}
           onBattleEnd={onBattleEnd}
         />
       )}

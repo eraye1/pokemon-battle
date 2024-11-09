@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { selectHealthAnimationDuration } from "../app/uiSlice";
-import { Condition, Move, Pokemon } from "../types";
+import { Condition, Move, Pokemon, Trainer } from "../types";
 import { wait } from "../utils/helper";
 import { minmaxMoveDecision } from "../utils/moves";
 
@@ -22,6 +22,8 @@ const useEndOfTurn = (
     activeSideEffect: Condition,
     name: string
   ) => Promise<void>,
+  userTeamState: PokemonBattleState[],
+  enemyTeamState: PokemonBattleState[],
   userSideEffect?: Condition,
   enemySideEffect?: Condition
 ) => {
@@ -71,24 +73,31 @@ const useEndOfTurn = (
 
   useEffect(() => {
     (async () => {
-      if (userHealth && enemyHealth) return;
+      // Check if all Pokemon in either team are fainted
+      const allUserPokemonFainted = userTeamState.every(pokemon => pokemon.health <= 0);
+      const allEnemyPokemonFainted = enemyTeamState.every(pokemon => pokemon.health <= 0);
+
+      if (!allUserPokemonFainted && !allEnemyPokemonFainted) return;
+
       setIsBattleEnd(true);
       await wait(healthAnimationDuration + 500);
-      if (userHealth === 0) {
+
+      if (allUserPokemonFainted) {
         userElement?.classList.add("loser");
-        setText(`You lost the battle!`);
-      } else if (enemyHealth === 0) {
+        setText(`All your Pokemon have fainted! You lost the battle!`);
+      } else if (allEnemyPokemonFainted) {
         enemyElement?.classList.add("loser");
-        setText(`You won the battle!`);
+        setText(`All opponent's Pokemon have fainted! You won the battle!`);
       }
+
       await wait(3000);
       setCloseModal(true);
     })();
   }, [
     enemyElement,
-    enemyHealth,
+    enemyTeamState,
     userElement,
-    userHealth,
+    userTeamState,
     setText,
     healthAnimationDuration,
   ]);

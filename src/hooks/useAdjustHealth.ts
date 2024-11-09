@@ -31,7 +31,7 @@ const useAdjustHealth = (user: Pokemon, enemy: Pokemon) => {
     [dispatch, enemy.maxHealth, enemy.name, user.maxHealth, user.name]
   );
 
-  return { adjustHealth, userHealth, enemyHealth };
+  return { adjustHealth, userHealth, enemyHealth, setUserHealth, setEnemyHealth };
 };
 
 export default useAdjustHealth;

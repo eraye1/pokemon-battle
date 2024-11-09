@@ -8,6 +8,7 @@ interface FooterProps {
   moveSet: Move[];
   onMoveSelect: (move: Move) => void;
   disabled: boolean;
+  onSwapClick: () => void;
 }
 
 const Footer: React.FC<FooterProps> = ({
@@ -15,6 +16,7 @@ const Footer: React.FC<FooterProps> = ({
   moveSet,
   onMoveSelect,
   disabled,
+  onSwapClick,
 }) => {
   const [currentPPs, setCurrentPPs] = useState(moveSet.map((move) => move.pp));
 
@@ -47,6 +49,13 @@ const Footer: React.FC<FooterProps> = ({
               </span>
             </button>
           ))}
+          <button
+            className="swap-button"
+            disabled={disabled}
+            onClick={onSwapClick}
+          >
+            Switch Pokemon
+          </button>
         </div>
       )}
     </StyledFooterContainer>
