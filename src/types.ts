@@ -18,6 +18,9 @@ export type Pokemon = {
     battle_front: string;
     battle_back: string;
   };
+  cries: {
+    latest: string;
+  }
   type: string[];
   moveNames: string[];
   stats: Record<string, number>;
