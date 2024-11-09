@@ -175,10 +175,17 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
 
           // Only process voice command if it's the user's turn
           if (!isTurnInProgress && !isBattleEnd && user.moves) {
-            const selectedMove = await getMoveFromVoiceCommand(transcript, user.name, user.moves);
-            if (selectedMove) {
-              console.log('ChatGPT selected move:', selectedMove.name);
-              setUserMove(selectedMove);
+            const result = await getMoveFromVoiceCommand(transcript, user.name, user.moves);
+            if (result && result.intends_switch_pokemon) {
+              if (!result.intends_pokemon_to_switch_to) {
+                setForcedSwap(true);
+                setShowSwapMenu(true);
+              } else {
+                handleSwapPokemon(userTrainer.team.findIndex((pokemon) => pokemon.name === result.intends_pokemon_to_switch_to));
+              }
+            } else if (result && result.move && result.move.name) {
+              console.log('ChatGPT selected move:', result.move.name);
+              setUserMove(result.move);
             }
           }
         }
