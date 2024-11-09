@@ -5,6 +5,7 @@ import { minmaxMoveDecision } from "../../utils/moves";
 import { StyledBattleScreenContainer } from "./BattleScreen.styled";
 import Footer from "./Footer";
 import HealthBar from "./HealthBar";
+import { getMoveFromVoiceCommand } from "../../utils/chatgpt";
 
 interface BattleScreenProps {
   onBattleEnd: () => void;
@@ -47,6 +48,46 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
   useEffect(() => {
     if (closeModal) onBattleEnd();
   }, [closeModal, onBattleEnd]);
+
+  useEffect(() => {
+    if (!('webkitSpeechRecognition' in window)) {
+      console.log('Speech recognition not supported');
+      return;
+    }
+
+    // @ts-ignore
+    const recognition = new webkitSpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    recognition.onresult = async (event: any) => {
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          const transcript = event.results[i][0].transcript;
+          console.log('Voice input:', transcript);
+
+          // Only process voice command if it's the user's turn
+          if (!isTurnInProgress && !isBattleEnd && user.moves) {
+            const selectedMove = await getMoveFromVoiceCommand(transcript, user.moves);
+            if (selectedMove) {
+              console.log('ChatGPT selected move:', selectedMove.name);
+              setUserMove(selectedMove);
+            }
+          }
+        }
+      }
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error('Speech recognition error:', event.error);
+    };
+
+    recognition.start();
+
+    return () => {
+      recognition.stop();
+    };
+  }, [isTurnInProgress, isBattleEnd, user.moves]);
 
   return (
     <StyledBattleScreenContainer>
