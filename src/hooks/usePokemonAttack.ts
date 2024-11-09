@@ -10,6 +10,7 @@ import {
 import { calculateMoveImpact, isSuccessful } from "../utils/battle";
 import { wait } from "../utils/helper";
 import useMoveAnimation from "./useMoveAnimation";
+import { generateSoundEffect } from "../utils/eleven";
 
 const usePokemonAttack = (
   userElement: HTMLElement | null,
@@ -51,6 +52,13 @@ const usePokemonAttack = (
     }
   };
 
+  const handleSoundEffect = async (
+    move: Move,
+  ) => {
+    const audio = await generateSoundEffect(move.name);
+    audio.play();
+  }
+
   const handleAttack = async (
     attacker: Pokemon,
     defender: Pokemon,
@@ -58,6 +66,7 @@ const usePokemonAttack = (
     activeSideEffect?: Condition
   ) => {
     setIsAttackInProgress(true);
+    
     let canMove = true;
     if (activeSideEffect)
       canMove = await handleMoveDisableSideEffect(
@@ -82,6 +91,7 @@ const usePokemonAttack = (
       setText("But it failed...");
       await wait(TEXT_ANIMATION_DURATION);
     } else if (damage.effectiveness)
+      await handleSoundEffect(move);
       await animateCharacter(
         target,
         damage.type === "status" ? "status" : "damage",
