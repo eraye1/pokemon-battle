@@ -141,6 +141,8 @@ const useBattleSequence = ({
             setIsAttackPhaseEnded(true);
           }
         }
+
+        setIsTurnInProgress(false);
       }
     })();
   }, [

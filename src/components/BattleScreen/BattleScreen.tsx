@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import useBattleSequence from "../../hooks/useBattleSequence";
-import { Move, Player, Pokemon, Trainer } from "../../types";
+import { Move, Player, Trainer } from "../../types";
 import { minmaxMoveDecision } from "../../utils/moves";
 import { StyledBattleScreenContainer } from "./BattleScreen.styled";
 import Footer from "./Footer";
@@ -150,7 +150,8 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
   }, [userTeamState, userPokemonIndex, isBattleEnd]);
 
   const handleSwapPokemon = async (newIndex: number) => {
-    if (isTurnInProgress || newIndex === userPokemonIndex) return;
+    // Allow swap if it's forced (Pokemon fainted) or if it's not during a turn
+    if ((!forcedSwap && isTurnInProgress) || newIndex === userPokemonIndex) return;
     if (userTeamState[newIndex].health <= 0) return; // Can't swap to fainted Pokemon
     
     // Play the cry of the new Pokemon
