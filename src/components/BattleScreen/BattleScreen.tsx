@@ -331,57 +331,61 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
   ]);
 
   // Add a timer for taunts
-  useEffect(() => {
-    if (isBattleEnd) return;
+  const [isTrainerVisible, setIsTrainerVisible] = useState(false);
+  const hideTrainerTimeout = useRef<NodeJS.Timeout>();
 
-    const generateTaunt = async () => {
-      const battleState = {
-        userPokemon: user,
-        enemyPokemon: enemy,
-        userHealth: userTeamState[userPokemonIndex].health,
-        enemyHealth: enemyTeamState[enemyPokemonIndex].health,
-        userMaxHealth: user.maxHealth,
-        enemyMaxHealth: enemy.maxHealth,
-        userSideEffect: userTeamState[userPokemonIndex].sideEffect,
-        enemySideEffect: enemyTeamState[enemyPokemonIndex].sideEffect,
-      };
-
-      const taunt = await getTrainerTaunt(battleState, enemyTrainer.name);
-      if (taunt) {
-        setText(taunt);
-        playTrainerVoice(taunt, enemyTrainer.isMale);
-        
-        // Add taunt to debug entries
-        setDebugEntries(prev => [...prev, {
-          timestamp: new Date(),
-          gptOutput: { taunt }
-        }]);
-      }
+  const generateTaunt = async () => {
+    const battleState = {
+      userPokemon: user,
+      enemyPokemon: enemy,
+      userHealth: userTeamState[userPokemonIndex].health,
+      enemyHealth: enemyTeamState[enemyPokemonIndex].health,
+      userMaxHealth: user.maxHealth,
+      enemyMaxHealth: enemy.maxHealth,
+      userSideEffect: userTeamState[userPokemonIndex].sideEffect,
+      enemySideEffect: enemyTeamState[enemyPokemonIndex].sideEffect,
     };
 
-    // Generate a taunt every 30-45 seconds
+    const taunt = await getTrainerTaunt(battleState, enemyTrainer.name);
+    if (taunt) {
+      // Clear any existing timeout
+      if (hideTrainerTimeout.current) {
+        clearTimeout(hideTrainerTimeout.current);
+      }
+
+      setText(taunt);
+      setIsTrainerVisible(true);
+      await playTrainerVoice(taunt, enemyTrainer.isMale);
+      
+      // Set new timeout to hide trainer
+      hideTrainerTimeout.current = setTimeout(() => {
+        setIsTrainerVisible(false);
+      }, 3000);
+      
+      setDebugEntries(prev => [...prev, {
+        timestamp: new Date(),
+        gptOutput: { taunt }
+      }]);
+    }
+  };
+
+  // Move taunt interval into useEffect
+  useEffect(() => {
     const interval = setInterval(() => {
-      // Only taunt if not in the middle of a turn or showing other messages
-      if (!isTurnInProgress && !showSwapMenu && text.includes("What will")) {
+      // Simplified condition for taunting
+      if (!isTurnInProgress && !showSwapMenu && !isBattleEnd) {
         generateTaunt();
       }
-    }, Math.random() * 15000 + 30000);
+    }, Math.random() * 15000 + 30000); // Random interval between 30-45 seconds
 
-    return () => clearInterval(interval);
-  }, [
-    isBattleEnd,
-    user,
-    enemy,
-    userTeamState,
-    enemyTeamState,
-    userPokemonIndex,
-    enemyPokemonIndex,
-    isTurnInProgress,
-    showSwapMenu,
-    text,
-    enemyTrainer.name,
-    enemyTrainer.isMale,
-  ]);
+    return () => {
+      clearInterval(interval);
+      // Clean up any existing hide trainer timeout
+      if (hideTrainerTimeout.current) {
+        clearTimeout(hideTrainerTimeout.current);
+      }
+    };
+  }, [isTurnInProgress, showSwapMenu, isBattleEnd]);
 
   // Add state for debug panel visibility
   const [showDebugPanel, setShowDebugPanel] = useState(true);
@@ -415,6 +419,9 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
         />
         <div className={`enemy ${enemy.name}`} id={Player.Enemy} ref={enemyRef}>
           <img src={enemy.sprites.battle_front} alt="" />
+        </div>
+        <div className={`enemy-trainer visible`}>
+          <img src={enemyTrainer.sprite} alt={enemyTrainer.name} />
         </div>
         <HealthBar
           player={Player.Enemy}

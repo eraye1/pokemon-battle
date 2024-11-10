@@ -111,6 +111,26 @@ export const StyledBattleScreenContainer = styled.div`
     }
   }
 
+  .enemy-trainer {
+    position: absolute;
+    right: 10%;
+    top: 10%;
+    z-index: 1;
+    transform: scale(0.7);
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    pointer-events: none;
+
+    &.visible {
+      opacity: 1;
+    }
+
+    img {
+      max-height: 200px;
+      object-fit: contain;
+    }
+  }
+
   @media (max-width: 750px) {
     .user,
     .enemy {
