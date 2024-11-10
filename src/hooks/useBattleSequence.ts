@@ -140,6 +140,8 @@ const useBattleSequence = ({
             setTurnState("first-half");
             setIsAttackPhaseEnded(true);
           }
+          // If the first player has fainted, the second player will not attack
+          // and the turn will end
         }
       }
     })();

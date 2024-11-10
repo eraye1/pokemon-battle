@@ -101,18 +101,18 @@ export async function getEmojiFromMoveName(
       messages: [
         {
           role: "system",
-          content: `You are a Pokemon battle assistant. You will receive a move name and should provide the emoji that best represents it. 
+          content: `You are a Pokemon battle assistant. You will receive a move name and should provide the emoji that best represents the attack. 
+You may use two emojis if necessary.
 
-            Examples:
-            - "Thunderbolt" -> ⚡
-            - "Wing Attack" -> 🦅
-            - "Fentanyl" -> 💉
-            - "Sword and Shield" -> 🛡️
-            - "Gun" -> 🔫
-            - "Hyper Beam" -> 🌈
-            - "Earthquake" -> 🌍
-            - "Fire Blast" -> 🔥
-            - "Ice Beam" -> ❄️
+Examples:
+- "Thunderbolt" -> ⚡
+- "Wing Attack" -> 🦅
+- "Fentanyl" -> 💉
+- "Sword and Shield" -> ⚔️🛡️
+- "Gun" -> 🔫
+- "Fire Blast" -> 🔥
+- "Ice Beam" -> ❄️
+- "Scald" -> 💧 🔥
         `,
         },
         {

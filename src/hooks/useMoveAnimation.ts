@@ -18,7 +18,6 @@ const useMoveAnimation = (
     
     const moveAnimationContainer = document.createElement("div");
     moveAnimationContainer.classList.add("emojiAttack", player.toLowerCase());
-    console.log(moveAnimationContainer.classList);
     moveAnimationContainer.textContent = emoji;
     
     container.appendChild(moveAnimationContainer);
