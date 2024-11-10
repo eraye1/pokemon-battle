@@ -25,7 +25,7 @@ To run this project locally, follow these steps:
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/kkatsi/pokemon-battle.git
+    git clone https://github.com/eraye1/pokemon-battle.git
     cd pokemon-battle
     ```
 
