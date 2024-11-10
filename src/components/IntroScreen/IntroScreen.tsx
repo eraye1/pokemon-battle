@@ -20,22 +20,11 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ user, enemy }) => {
   const vsRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const playAudio = (audioUrl: string) => {
-    const audio = new Audio(audioUrl);
-    audio.play();
-  };
-
   useEffect(() => {
     (async () => {
-      if (user?.cries.latest) {
-        playAudio(user.cries.latest);
-      }
-      if (enemy?.cries.latest) {
-        playAudio(enemy.cries.latest);
-      }
       await wait(1000);
       setShowVS(true);
-      await wait(3000);
+      await wait(2000);
 
       if (
         leftSideRef.current &&
