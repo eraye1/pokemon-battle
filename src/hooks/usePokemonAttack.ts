@@ -10,6 +10,7 @@ import {
 import { calculateMoveImpact, isSuccessful } from "../utils/battle";
 import { wait } from "../utils/helper";
 import useMoveAnimation from "./useMoveAnimation";
+import { playTrainerVoice } from "../utils/elevenlabs";
 
 const usePokemonAttack = (
   userElement: HTMLElement | null,
@@ -68,6 +69,12 @@ const usePokemonAttack = (
       setIsAttackInProgress(false);
       return;
     }
+    
+    // If it's the enemy's turn, play the trainer voice command
+    if (enemyElement?.classList.contains(attacker.name)) {
+      await playTrainerVoice(`<break time="0.4s"/>${attacker.name}, <break time="0.2s"/>use ${move.name}!`);
+    }
+
     setText(`${attacker.name} used ${move?.name}!`);
     await wait(TEXT_ANIMATION_DURATION);
     const { damage, target, sideEffect } = calculateMoveImpact(
@@ -107,6 +114,8 @@ const usePokemonAttack = (
       await wait(TEXT_ANIMATION_DURATION);
       await adjustHealth(attacker.name, damage.healthToDrain, true);
     }
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsAttackInProgress(false);
   };
 
