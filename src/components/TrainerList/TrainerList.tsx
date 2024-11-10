@@ -16,22 +16,33 @@ const TRAINERS_CONFIG = [
     name: "Ash Ketchum",
     sprite: "/trainers/ash.png",
     description: "Pokemon Master from Pallet Town",
-    teamNames: ["pikachu", "charizard", "bulbasaur", "squirtle"]
+    teamNames: ["pikachu", "charizard", "bulbasaur", "squirtle"],
+    isMale: true,
   },
   {
     id: "misty",
     name: "Misty",
     sprite: "/trainers/misty.png",
     description: "Cerulean City Gym Leader",
-    teamNames: ["starmie", "gyarados", "psyduck", "staryu"]
+    teamNames: ["starmie", "gyarados", "psyduck", "staryu"],
+    isMale: false,
   },
   {
     id: "brock",
     name: "Brock",
     sprite: "/trainers/brock.png",
     description: "Pewter City Gym Leader",
-    teamNames: ["onix", "geodude", "vulpix", "steelix"]
+    teamNames: ["onix", "geodude", "vulpix", "steelix"],
+    isMale: true,
   },
+  {
+    id: "zach",
+    name: "Zach Cohen",
+    sprite: "/trainers/zach.png",
+    description: "A16Z Gym Leader",
+    isMale: true,
+    teamNames: ["zapdos", "moltres", "articuno", "dragonite"]
+  }
 ];
 
 export const TrainerList: React.FC<TrainerListProps> = ({
