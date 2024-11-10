@@ -56,7 +56,8 @@ const usePokemonAttack = (
     attacker: Pokemon,
     defender: Pokemon,
     move: Move,
-    activeSideEffect?: Condition
+    activeSideEffect?: Condition,
+    isEnemyMale?: boolean
   ) => {
     setIsAttackInProgress(true);
     let canMove = true;
@@ -72,7 +73,7 @@ const usePokemonAttack = (
     
     // If it's the enemy's turn, play the trainer voice command
     if (enemyElement?.classList.contains(attacker.name)) {
-      await playTrainerVoice(`<break time="0.4s"/>${attacker.name}, <break time="0.2s"/>use ${move.name}!`);
+      await playTrainerVoice(`<break time="0.4s"/>${attacker.name}, <break time="0.2s"/>use ${move.name}!`, isEnemyMale);
     }
 
     setText(`${attacker.name} used ${move?.name}!`);

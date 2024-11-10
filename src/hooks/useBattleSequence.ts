@@ -127,7 +127,8 @@ const useBattleSequence = ({
               firstPlayer,
               secondPlayer,
               firstMove,
-              firstSideEffect
+              firstSideEffect,
+              isEnemyMale
             );
             setTurnState("second-half");
           }
@@ -137,7 +138,8 @@ const useBattleSequence = ({
               secondPlayer,
               firstPlayer,
               secondMove,
-              secondSideEffect
+              secondSideEffect,
+              isEnemyMale
             );
             setTurnState("first-half");
             setIsAttackPhaseEnded(true);
