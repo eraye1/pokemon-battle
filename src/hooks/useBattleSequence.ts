@@ -5,6 +5,20 @@ import useAdjustHealth from "./useAdjustHealth";
 import useEndOfTurn from "./useEndOfTurn";
 import usePokemonAttack from "./usePokemonAttack";
 import useSideEffects from "./useSideEffects";
+import { playTrainerVoice } from "../utils/elevenlabs";
+
+interface BattleSequenceProps {
+  user: Pokemon;
+  enemy: Pokemon;
+  enemyMove?: Move;
+  setEnemyMove: (move: Move | undefined) => void;
+  userMove?: Move;
+  setUserMove: (move: Move | undefined) => void;
+  userElement: HTMLElement | null;
+  enemyElement: HTMLElement | null;
+  userTeamState: PokemonBattleState[];
+  enemyTeamState: PokemonBattleState[];
+}
 
 const useBattleSequence = ({
   user,
@@ -17,16 +31,7 @@ const useBattleSequence = ({
   enemyElement,
   userTeamState,
   enemyTeamState,
-}: {
-  user: Pokemon;
-  enemy: Pokemon;
-  enemyMove?: Move;
-  setEnemyMove: (move: Move | undefined) => void;
-  userMove?: Move;
-  setUserMove: (move: Move | undefined) => void;
-  userElement: HTMLElement | null;
-  enemyElement: HTMLElement | null;
-}) => {
+}: BattleSequenceProps) => {
   const [text, setText] = useState("");
   const [isTurnInProgress, setIsTurnInProgress] = useState(false);
 

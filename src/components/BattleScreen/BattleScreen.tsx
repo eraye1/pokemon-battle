@@ -7,6 +7,7 @@ import Footer from "./Footer";
 import HealthBar from "./HealthBar";
 import { getMoveFromVoiceCommand } from "../../utils/chatgpt";
 import PokemonSwapMenu from "./PokemonSwapMenu/PokemonSwapMenu";
+import { playTrainerVoice } from "../../utils/elevenlabs";
 
 interface BattleScreenProps {
   onBattleEnd: () => void;
@@ -77,10 +78,10 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
   } = useBattleSequence({
     user,
     enemy,
-    userMove,
     enemyMove,
-    setUserMove,
     setEnemyMove,
+    setUserMove,
+    userMove,
     userElement: userRef.current,
     enemyElement: enemyRef.current,
     userTeamState,
@@ -127,15 +128,24 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
   // Check if current Pokemon has fainted
   useEffect(() => {
     if (userTeamState[userPokemonIndex].health <= 0 && !isBattleEnd) {
-      // Check if there are any non-fainted Pokemon left
-      const hasAvailablePokemon = userTeamState.some((pokemon, index) => 
-        pokemon.health > 0 && index !== userPokemonIndex
-      );
+      const sequence = async () => {
+        // Play faint cry
+        if (user.cries?.latest) {
+          const audio = new Audio(user.cries.latest);
+          await audio.play();
+        }
+        
+        const hasAvailablePokemon = userTeamState.some((pokemon, index) => 
+          pokemon.health > 0 && index !== userPokemonIndex
+        );
 
-      if (hasAvailablePokemon) {
-        setForcedSwap(true);
-        setShowSwapMenu(true);
-      }
+        if (hasAvailablePokemon) {
+          setForcedSwap(true);
+          setShowSwapMenu(true);
+        }
+      };
+
+      sequence();
     }
   }, [userTeamState, userPokemonIndex, isBattleEnd]);
 
@@ -229,21 +239,33 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
   // Add effect to handle enemy Pokemon fainting
   useEffect(() => {
     if (enemyTeamState[enemyPokemonIndex].health <= 0 && !isBattleEnd) {
-      // Find the next non-fainted Pokemon in enemy's team
       const nextPokemonIndex = enemyTeamState.findIndex(
         (pokemon, index) => pokemon.health > 0 && index !== enemyPokemonIndex
       );
 
       if (nextPokemonIndex !== -1) {
         const sequence = async () => {
-          // First show faint message
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          // Play faint cry
+          if (enemy.cries?.latest) {
+            const audio = new Audio(enemy.cries.latest);
+            await audio.play();
+          }
+          
+          setText(`${enemy.name} fainted!`);
+          await new Promise(resolve => setTimeout(resolve, 3000));
 
-          // Finally switch the Pokemon
+          const nextPokemon = enemyTrainer.team[nextPokemonIndex];
+          setText(`${enemyTrainer.name} is about to send out ${nextPokemon.name}!`);
+          await new Promise(resolve => setTimeout(resolve, 3000));
+
+          // Play new Pokemon cry
+          if (nextPokemon.cries?.latest) {
+            const audio = new Audio(nextPokemon.cries.latest);
+            await audio.play();
+          }
+
           setEnemyPokemonIndex(nextPokemonIndex);
           setEnemyHealth(enemyTeamState[nextPokemonIndex].health);
-          
-          // Enemy gets a free attack with their new Pokemon
           setEnemyMove(minmaxMoveDecision(
             enemyTrainer.team[nextPokemonIndex].moves ?? [], 
             enemyTrainer.team[nextPokemonIndex], 
@@ -254,7 +276,7 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
         sequence();
       }
     }
-  }, [enemyTeamState, enemyPokemonIndex, isBattleEnd, enemy.name, enemyTrainer.team, user]);
+  }, [enemyTeamState, enemyPokemonIndex, isBattleEnd, enemy.name, enemyTrainer.name, enemyTrainer.team, user]);
 
   useEffect(() => {
     const audio = audioRef.current;
