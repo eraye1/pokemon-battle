@@ -139,9 +139,16 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
     }
   }, [userTeamState, userPokemonIndex, isBattleEnd]);
 
-  const handleSwapPokemon = (newIndex: number) => {
+  const handleSwapPokemon = async (newIndex: number) => {
     if (isTurnInProgress || newIndex === userPokemonIndex) return;
     if (userTeamState[newIndex].health <= 0) return; // Can't swap to fainted Pokemon
+    
+    // Play the cry of the new Pokemon
+    const newPokemon = userTrainer.team[newIndex];
+    if (newPokemon.cries?.latest) {
+      const audio = new Audio(newPokemon.cries.latest);
+      await audio.play();
+    }
     
     // First set the enemy move
     setEnemyMove(minmaxMoveDecision(enemy.moves ?? [], enemy, userTrainer.team[newIndex]));
@@ -175,7 +182,7 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
           console.log('Voice input:', transcript);
 
           // Only process voice command if it's the user's turn and swap menu is not open
-          if (!isTurnInProgress && !isBattleEnd && user.moves && !showSwapMenu) {
+          if (!isTurnInProgress && !isBattleEnd && user.moves) {
             const result = await getMoveFromVoiceCommand(transcript, user.name, user.moves);
             if (result && result.intends_switch_pokemon) {
               if (!result.intends_pokemon_to_switch_to) {
@@ -184,7 +191,7 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
               } else {
                 handleSwapPokemon(userTrainer.team.findIndex((pokemon) => pokemon.name === result.intends_pokemon_to_switch_to));
               }
-            } else if (result && result.move && result.move.name) {
+            } else if (result && result.move && result.move.name && !showSwapMenu) {
               console.log('ChatGPT selected move:', result.move.name);
               setUserMove(result.move);
             }
