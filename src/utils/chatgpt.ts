@@ -33,8 +33,22 @@ const FaintVoiceLineSchema = z.object({
   voice_line: z.string(),
 });
 
+const TauntSchema = z.object({
+  taunt: z.string(),
+});
+
 type Result = z.infer<typeof ResultSchema>;
 type FaintVoiceLine = z.infer<typeof FaintVoiceLineSchema>;
+type BattleState = {
+  userPokemon: Pokemon;
+  enemyPokemon: Pokemon;
+  userHealth: number;
+  enemyHealth: number;
+  userMaxHealth: number;
+  enemyMaxHealth: number;
+  userSideEffect?: any;
+  enemySideEffect?: any;
+};
 
 export async function getMoveFromVoiceCommand(
   voiceInput: string,
@@ -165,6 +179,48 @@ export async function getFaintVoiceLine(
     return data ? data.voice_line : "you tried your best.";
   } catch (error) {
     console.error("Error getting faint voice line from ChatGPT:", error);
+    return undefined;
+  }
+}
+
+export async function getTrainerTaunt(
+  battleState: BattleState,
+  enemyTrainerName: string
+): Promise<string | undefined> {
+  try {
+    const response = await openai.beta.chat.completions.parse({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: `You are ${enemyTrainerName}, a Pokemon trainer in a battle. Generate a short, witty taunt (max 15 words) based on the current battle state.
+            
+            Consider:
+            - If you're winning/losing
+            - Current Pokemon health percentages
+            - Status effects
+            - Make references to Pokemon types and characteristics
+            
+            Examples:
+            - "Your Charizard's flame is barely a spark now!"
+            - "Is that all your Pikachu can muster?"
+            - "Paralyzed? Looks like your Pokemon needs a massage!"
+            - "My Pokemon's just warming up!"`,
+        },
+        {
+          role: "user",
+          content: JSON.stringify(battleState),
+        },
+      ],
+      temperature: 0.9,
+      max_tokens: 60,
+      response_format: zodResponseFormat(TauntSchema, "taunt"),
+    });
+
+    const data = response.choices[0].message.parsed;
+    return data ? data.taunt : undefined;
+  } catch (error) {
+    console.error("Error getting taunt from ChatGPT:", error);
     return undefined;
   }
 }

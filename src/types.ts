@@ -102,13 +102,14 @@ export type Condition =
   | Confusion
   | UnknownEffect;
 
-export interface Trainer {
+export type Trainer = {
+  isMale: boolean;
   id: string;
   name: string;
   sprite: string;
   description: string;
   team: Pokemon[];
-}
+};
 
 export interface PokemonBattleState {
   pokemon: Pokemon;

@@ -8,6 +8,7 @@ import HealthBar from "./HealthBar";
 import {
   getFaintVoiceLine,
   getMoveFromVoiceCommand,
+  getTrainerTaunt,
 } from "../../utils/chatgpt";
 import PokemonSwapMenu from "./PokemonSwapMenu/PokemonSwapMenu";
 import { playTrainerVoice } from "../../utils/elevenlabs";
@@ -310,6 +311,53 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
     enemyTrainer.name,
     enemyTrainer.team,
     user,
+  ]);
+
+  // Add a timer for taunts
+  useEffect(() => {
+    if (isBattleEnd) return;
+
+    const generateTaunt = async () => {
+      const battleState = {
+        userPokemon: user,
+        enemyPokemon: enemy,
+        userHealth: userTeamState[userPokemonIndex].health,
+        enemyHealth: enemyTeamState[enemyPokemonIndex].health,
+        userMaxHealth: user.maxHealth,
+        enemyMaxHealth: enemy.maxHealth,
+        userSideEffect: userTeamState[userPokemonIndex].sideEffect,
+        enemySideEffect: enemyTeamState[enemyPokemonIndex].sideEffect,
+      };
+
+      const taunt = await getTrainerTaunt(battleState, enemyTrainer.name);
+      if (taunt) {
+        setText(taunt);
+        playTrainerVoice(taunt, enemyTrainer.isMale);
+      }
+    };
+
+    // Generate a taunt every 30-45 seconds
+    const interval = setInterval(() => {
+      // Only taunt if not in the middle of a turn or showing other messages
+      if (!isTurnInProgress && !showSwapMenu && text.includes("What will")) {
+        generateTaunt();
+      }
+    }, Math.random() * 15000 + 30000);
+
+    return () => clearInterval(interval);
+  }, [
+    isBattleEnd,
+    user,
+    enemy,
+    userTeamState,
+    enemyTeamState,
+    userPokemonIndex,
+    enemyPokemonIndex,
+    isTurnInProgress,
+    showSwapMenu,
+    text,
+    enemyTrainer.name,
+    enemyTrainer.isMale,
   ]);
 
   useEffect(() => {
