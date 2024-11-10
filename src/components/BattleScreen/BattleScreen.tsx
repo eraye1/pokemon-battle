@@ -160,9 +160,6 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
       await audio.play();
     }
     
-    // First set the enemy move
-    setEnemyMove(minmaxMoveDecision(enemy.moves ?? [], enemy, userTrainer.team[newIndex]));
-    
     // Then update the active Pokemon index
     setUserPokemonIndex(newIndex);
     setShowSwapMenu(false);

@@ -86,7 +86,7 @@ const usePokemonAttack = (
     const isAttackSuccessful = isSuccessful(attacker.stats.accuracy);
 
     if (!target || !isAttackSuccessful) {
-      setText("But it failed...");
+      setText("But it missed...");
       await wait(TEXT_ANIMATION_DURATION);
     } else if (damage.effectiveness)
       await animateCharacter(
