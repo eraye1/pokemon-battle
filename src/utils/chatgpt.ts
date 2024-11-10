@@ -29,7 +29,12 @@ const ResultSchema = z.object({
   move: MoveSchema.optional(),
 });
 
+const FaintVoiceLineSchema = z.object({
+  voice_line: z.string(),
+});
+
 type Result = z.infer<typeof ResultSchema>;
+type FaintVoiceLine = z.infer<typeof FaintVoiceLineSchema>;
 
 export async function getMoveFromVoiceCommand(
   voiceInput: string,
@@ -127,6 +132,39 @@ export async function getEmojiFromMoveName(
     return data ? data.emoji : undefined;
   } catch (error) {
     console.error("Error getting emoji from ChatGPT:", error);
+    return undefined;
+  }
+}
+
+export async function getFaintVoiceLine(
+  pokemonName: string
+): Promise<string | undefined> {
+  try {
+    const response = await openai.beta.chat.completions.parse({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: `You are a Pokemon battle assistant. You are generating a trainer voice line for what they would say when their Pokemon faints. 
+        `,
+        },
+        {
+          role: "user",
+          content: pokemonName,
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 80,
+      response_format: zodResponseFormat(FaintVoiceLineSchema, "voice_line"),
+    });
+
+    const data = response.choices[0].message.parsed;
+
+    console.log("ChatGPT faint voice line response:", data);
+
+    return data ? data.voice_line : "you tried your best.";
+  } catch (error) {
+    console.error("Error getting faint voice line from ChatGPT:", error);
     return undefined;
   }
 }

@@ -5,7 +5,7 @@ import { minmaxMoveDecision } from "../../utils/moves";
 import { StyledBattleScreenContainer } from "./BattleScreen.styled";
 import Footer from "./Footer";
 import HealthBar from "./HealthBar";
-import { getMoveFromVoiceCommand } from "../../utils/chatgpt";
+import { getFaintVoiceLine, getMoveFromVoiceCommand } from "../../utils/chatgpt";
 import PokemonSwapMenu from "./PokemonSwapMenu/PokemonSwapMenu";
 import { playTrainerVoice } from "../../utils/elevenlabs";
 
@@ -247,6 +247,9 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
             await audio.play();
           }
           
+          const voiceLine = await getFaintVoiceLine(enemy.name);
+          playTrainerVoice(`${voiceLine}`);
+
           setText(`${enemy.name} fainted!`);
           await new Promise(resolve => setTimeout(resolve, 3000));
 
