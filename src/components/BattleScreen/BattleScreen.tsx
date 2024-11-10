@@ -12,6 +12,7 @@ import {
 } from "../../utils/chatgpt";
 import PokemonSwapMenu from "./PokemonSwapMenu/PokemonSwapMenu";
 import { playTrainerVoice } from "../../utils/elevenlabs";
+import DebugPanel, { DebugEntry } from '../DebugPanel/DebugPanel';
 
 interface BattleScreenProps {
   onBattleEnd: () => void;
@@ -181,6 +182,9 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
     if (closeModal) onBattleEnd();
   }, [closeModal, onBattleEnd]);
 
+  // Add state for debug entries
+  const [debugEntries, setDebugEntries] = useState<DebugEntry[]>([]);
+
   useEffect(() => {
     if (!("webkitSpeechRecognition" in window)) {
       console.log("Speech recognition not supported");
@@ -198,6 +202,12 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
           const transcript = event.results[i][0].transcript;
           console.log("Voice input:", transcript);
 
+          // Add voice input to debug entries
+          setDebugEntries(prev => [...prev, {
+            timestamp: new Date(),
+            voiceInput: transcript
+          }]);
+
           // Only process voice command if it's the user's turn and swap menu is not open
           if (!isTurnInProgress && !isBattleEnd && user.moves) {
             const result = await getMoveFromVoiceCommand(
@@ -205,6 +215,13 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
               user.name,
               user.moves
             );
+
+            // Add GPT output to debug entries
+            setDebugEntries(prev => [...prev, {
+              timestamp: new Date(),
+              gptOutput: result
+            }]);
+
             if (result && result.intends_switch_pokemon) {
               if (!result.intends_pokemon_to_switch_to) {
                 setForcedSwap(false); // Don't force swap if it's voluntary
@@ -319,8 +336,8 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
 
     const generateTaunt = async () => {
       const battleState = {
-        enemyPokemon: user,
-        userPokemon: enemy,
+        userPokemon: user,
+        enemyPokemon: enemy,
         userHealth: userTeamState[userPokemonIndex].health,
         enemyHealth: enemyTeamState[enemyPokemonIndex].health,
         userMaxHealth: user.maxHealth,
@@ -333,6 +350,12 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
       if (taunt) {
         setText(taunt);
         playTrainerVoice(taunt, enemyTrainer.isMale);
+        
+        // Add taunt to debug entries
+        setDebugEntries(prev => [...prev, {
+          timestamp: new Date(),
+          gptOutput: { taunt }
+        }]);
       }
     };
 
@@ -360,22 +383,23 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
     enemyTrainer.isMale,
   ]);
 
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (audio) {
-      audio.play();
-    }
-
-    return () => {
-      if (audio) {
-        audio.pause();
-        audio.currentTime = 0;
-      }
-    };
-  }, []);
+  // Add state for debug panel visibility
+  const [showDebugPanel, setShowDebugPanel] = useState(true);
 
   return (
     <StyledBattleScreenContainer>
+      <button 
+        onClick={() => setShowDebugPanel(!showDebugPanel)}
+        style={{
+          position: 'fixed',
+          right: '310px',
+          top: '10px',
+          zIndex: 1000,
+          opacity: 0.7,
+        }}
+      >
+        {showDebugPanel ? 'Hide Debug' : 'Show Debug'}
+      </button>
       <audio ref={audioRef} src="../../public/trainer_battle.mp3" loop />
       <div className={showSwapMenu ? "blurred" : ""}>
         <div className={`user ${user.name}`} id={Player.User} ref={userRef}>
@@ -423,6 +447,7 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
           forcedSwap={forcedSwap}
         />
       )}
+      {showDebugPanel && <DebugPanel entries={debugEntries} />}
     </StyledBattleScreenContainer>
   );
 };
