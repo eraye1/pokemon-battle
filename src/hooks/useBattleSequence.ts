@@ -119,32 +119,28 @@ const useBattleSequence = ({
           enemySideEffect
         );
 
-        if (firstPlayer === user ? userHealth > 0 : enemyHealth > 0) {
-          await handleAttack(
-            firstPlayer,
-            secondPlayer,
-            firstMove,
-            firstSideEffect
-          );
-
-          await new Promise(resolve => setTimeout(resolve, 100));
-
-          const currentFirstHealth = firstPlayer === user ? userHealth : enemyHealth;
-          const currentSecondHealth = secondPlayer === user ? userHealth : enemyHealth;
-
-          if (currentFirstHealth > 0 && currentSecondHealth > 0) {
+        if (turnState === "first-half") {
+          if (firstPlayer === user ? userHealth > 0 : enemyHealth > 0) {
+            await handleAttack(
+              firstPlayer,
+              secondPlayer,
+              firstMove,
+              firstSideEffect
+            );
             setTurnState("second-half");
+          }
+        } else if (turnState === "second-half") {
+          if (secondPlayer === user ? userHealth > 0 : enemyHealth > 0) {
             await handleAttack(
               secondPlayer,
               firstPlayer,
               secondMove,
               secondSideEffect
             );
+            setTurnState("first-half");
+            setIsAttackPhaseEnded(true);
           }
         }
-
-        setTurnState("first-half");
-        setIsAttackPhaseEnded(true);
       }
     })();
   }, [
