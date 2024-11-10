@@ -319,8 +319,8 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
 
     const generateTaunt = async () => {
       const battleState = {
-        userPokemon: user,
-        enemyPokemon: enemy,
+        enemyPokemon: user,
+        userPokemon: enemy,
         userHealth: userTeamState[userPokemonIndex].health,
         enemyHealth: enemyTeamState[enemyPokemonIndex].health,
         userMaxHealth: user.maxHealth,
