@@ -335,14 +335,15 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
   const hideTrainerTimeout = useRef<NodeJS.Timeout>();
 
   const generateTaunt = async () => {
+    // this is the enemy trainer taunting the user trainer so we need to swap the user and enemy
     const battleState = {
-      userPokemon: user,
-      enemyPokemon: enemy,
-      userHealth: userTeamState[userPokemonIndex].health,
-      enemyHealth: enemyTeamState[enemyPokemonIndex].health,
-      userMaxHealth: user.maxHealth,
-      enemyMaxHealth: enemy.maxHealth,
-      userSideEffect: userTeamState[userPokemonIndex].sideEffect,
+      userPokemon: enemy,
+      enemyPokemon: user,
+      userHealth: enemyTeamState[enemyPokemonIndex].health,
+      enemyHealth: userTeamState[userPokemonIndex].health,
+      userMaxHealth: enemy.maxHealth,
+      enemyMaxHealth: user.maxHealth,
+      userSideEffect: enemyTeamState[enemyPokemonIndex].sideEffect,
       enemySideEffect: enemyTeamState[enemyPokemonIndex].sideEffect,
     };
 
