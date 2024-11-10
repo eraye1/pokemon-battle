@@ -72,6 +72,11 @@ html {
     moveFromEnemyToUser 0.5s ease-in-out 2s forwards;
 }
 
+.blurred {
+  filter: blur(5px);
+  pointer-events: none; /* Prevent interactions with blurred elements */
+}
+
 @keyframes moveFromEnemyToUser {
   from {
     transform: translateX(0vw) translateY(0px);
@@ -245,3 +250,4 @@ html {
     transform: translate(0, 0) rotate(0) scale(1);
   }
 }
+
