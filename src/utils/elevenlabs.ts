@@ -30,7 +30,7 @@ export async function playTrainerVoice(text: string): Promise<void> {
 
     const audioBlob = await response.blob();
     const audio = new Audio(URL.createObjectURL(audioBlob));
-    audio.volume = 0.8;
+    audio.volume = 1.0;
     await audio.play();
   } catch (error) {
     console.error('Error playing trainer voice:', error);
