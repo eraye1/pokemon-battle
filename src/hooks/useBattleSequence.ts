@@ -18,6 +18,7 @@ interface BattleSequenceProps {
   enemyElement: HTMLElement | null;
   userTeamState: PokemonBattleState[];
   enemyTeamState: PokemonBattleState[];
+  isEnemyMale?: boolean;
 }
 
 const useBattleSequence = ({
@@ -31,6 +32,7 @@ const useBattleSequence = ({
   enemyElement,
   userTeamState,
   enemyTeamState,
+  isEnemyMale,
 }: BattleSequenceProps) => {
   const [text, setText] = useState("");
   const [isTurnInProgress, setIsTurnInProgress] = useState(false);

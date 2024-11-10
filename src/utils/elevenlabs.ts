@@ -1,15 +1,16 @@
 const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY;
-const VOICE_ID = "cgSgspJ2msm6clMCkdW9";
+const FEMALE_VOICE_ID = "EXAVITQu4vr4xnSDxMaL";
+const MALE_VOICE_ID = "nPczCjzI2devNBz1zQrb";
 
 type VoiceSettings = {
   stability: number;
   similarity_boost: number;
 };
 
-export async function playTrainerVoice(text: string): Promise<void> {
+export async function playTrainerVoice(text: string, isEnemyMale: boolean = false): Promise<void> {
   try {
     const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
+      `https://api.elevenlabs.io/v1/text-to-speech/${isEnemyMale ? MALE_VOICE_ID : FEMALE_VOICE_ID}`,
       {
         method: 'POST',
         headers: {
@@ -18,6 +19,7 @@ export async function playTrainerVoice(text: string): Promise<void> {
         },
         body: JSON.stringify({
           text,
+          model_id: "eleven_monolingual_v1",
           voice_settings: {
             stability: 0.5,
             similarity_boost: 0.5,

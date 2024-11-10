@@ -109,3 +109,9 @@ export interface Trainer {
   description: string;
   team: Pokemon[];
 }
+
+export interface PokemonBattleState {
+  pokemon: Pokemon;
+  currentHP: number;
+  // Add any other relevant battle state properties
+}

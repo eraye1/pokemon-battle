@@ -86,6 +86,7 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
     enemyElement: enemyRef.current,
     userTeamState,
     enemyTeamState,
+    isEnemyMale: enemyTrainer.isMale,
   });
 
   // Update team state when health changes from battle sequence
@@ -250,7 +251,7 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
           }
           
           const voiceLine = await getFaintVoiceLine(enemy.name);
-          playTrainerVoice(`${voiceLine}`);
+          playTrainerVoice(`${voiceLine}`, enemyTrainer.isMale);
 
           setText(`${enemy.name} fainted!`);
           await new Promise(resolve => setTimeout(resolve, 3000));
