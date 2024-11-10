@@ -5,7 +5,10 @@ import { minmaxMoveDecision } from "../../utils/moves";
 import { StyledBattleScreenContainer } from "./BattleScreen.styled";
 import Footer from "./Footer";
 import HealthBar from "./HealthBar";
-import { getFaintVoiceLine, getMoveFromVoiceCommand } from "../../utils/chatgpt";
+import {
+  getFaintVoiceLine,
+  getMoveFromVoiceCommand,
+} from "../../utils/chatgpt";
 import PokemonSwapMenu from "./PokemonSwapMenu/PokemonSwapMenu";
 import { playTrainerVoice } from "../../utils/elevenlabs";
 
@@ -31,23 +34,27 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
   initialEnemyPokemonIndex = 0,
 }) => {
   // Track the current active Pokemon indices
-  const [userPokemonIndex, setUserPokemonIndex] = useState(initialUserPokemonIndex);
-  const [enemyPokemonIndex, setEnemyPokemonIndex] = useState(initialEnemyPokemonIndex);
+  const [userPokemonIndex, setUserPokemonIndex] = useState(
+    initialUserPokemonIndex
+  );
+  const [enemyPokemonIndex, setEnemyPokemonIndex] = useState(
+    initialEnemyPokemonIndex
+  );
 
   // Track the state of all Pokemon in both teams
   const [userTeamState, setUserTeamState] = useState<PokemonBattleState[]>(
-    userTrainer.team.map(pokemon => ({
+    userTrainer.team.map((pokemon) => ({
       health: pokemon.maxHealth,
       maxHealth: pokemon.maxHealth,
-      sideEffect: undefined
+      sideEffect: undefined,
     }))
   );
 
   const [enemyTeamState, setEnemyTeamState] = useState<PokemonBattleState[]>(
-    enemyTrainer.team.map(pokemon => ({
+    enemyTrainer.team.map((pokemon) => ({
       health: pokemon.maxHealth,
       maxHealth: pokemon.maxHealth,
-      sideEffect: undefined
+      sideEffect: undefined,
     }))
   );
 
@@ -74,7 +81,7 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
     closeModal,
     setUserHealth,
     setEnemyHealth,
-    setText
+    setText,
   } = useBattleSequence({
     user,
     enemy,
@@ -135,9 +142,9 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
           const audio = new Audio(user.cries.latest);
           await audio.play();
         }
-        
-        const hasAvailablePokemon = userTeamState.some((pokemon, index) => 
-          pokemon.health > 0 && index !== userPokemonIndex
+
+        const hasAvailablePokemon = userTeamState.some(
+          (pokemon, index) => pokemon.health > 0 && index !== userPokemonIndex
         );
 
         if (hasAvailablePokemon) {
@@ -154,14 +161,14 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
     // Allow swap if it's forced (Pokemon fainted) or if it's not during a turn
     if ((!forcedSwap && isTurnInProgress) || newIndex === userPokemonIndex) return;
     if (userTeamState[newIndex].health <= 0) return; // Can't swap to fainted Pokemon
-    
+
     // Play the cry of the new Pokemon
     const newPokemon = userTrainer.team[newIndex];
     if (newPokemon.cries?.latest) {
       const audio = new Audio(newPokemon.cries.latest);
       await audio.play();
     }
-    
+
     // Then update the active Pokemon index
     setUserPokemonIndex(newIndex);
     setShowSwapMenu(false);
@@ -174,8 +181,8 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
   }, [closeModal, onBattleEnd]);
 
   useEffect(() => {
-    if (!('webkitSpeechRecognition' in window)) {
-      console.log('Speech recognition not supported');
+    if (!("webkitSpeechRecognition" in window)) {
+      console.log("Speech recognition not supported");
       return;
     }
 
@@ -184,24 +191,38 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
     recognition.continuous = true;
     recognition.interimResults = true;
 
-    recognition.onresult = async (event: any) => {
+    recognition.onresult = async (event: SpeechRecognitionEvent) => {
       for (let i = event.resultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
           const transcript = event.results[i][0].transcript;
-          console.log('Voice input:', transcript);
+          console.log("Voice input:", transcript);
 
           // Only process voice command if it's the user's turn and swap menu is not open
           if (!isTurnInProgress && !isBattleEnd && user.moves) {
-            const result = await getMoveFromVoiceCommand(transcript, user.name, user.moves);
+            const result = await getMoveFromVoiceCommand(
+              transcript,
+              user.name,
+              user.moves
+            );
             if (result && result.intends_switch_pokemon) {
               if (!result.intends_pokemon_to_switch_to) {
                 setForcedSwap(false); // Don't force swap if it's voluntary
                 setShowSwapMenu(true);
               } else {
-                handleSwapPokemon(userTrainer.team.findIndex((pokemon) => pokemon.name === result.intends_pokemon_to_switch_to));
+                handleSwapPokemon(
+                  userTrainer.team.findIndex(
+                    (pokemon) =>
+                      pokemon.name === result.intends_pokemon_to_switch_to
+                  )
+                );
               }
-            } else if (result && result.move && result.move.name && !showSwapMenu) {
-              console.log('ChatGPT selected move:', result.move.name);
+            } else if (
+              result &&
+              result.move &&
+              result.move.name &&
+              !showSwapMenu
+            ) {
+              console.log("ChatGPT selected move:", result.move.name);
               setUserMove(result.move);
             }
           }
@@ -210,7 +231,7 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
     };
 
     recognition.onerror = (event: any) => {
-      console.error('Speech recognition error:', event.error);
+      console.error("Speech recognition error:", event.error);
     };
 
     recognition.start();
@@ -219,7 +240,6 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
       recognition.stop();
     };
   }, [isTurnInProgress, isBattleEnd, user.moves, showSwapMenu]);
-
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -249,16 +269,18 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
             const audio = new Audio(enemy.cries.latest);
             await audio.play();
           }
-          
+
           const voiceLine = await getFaintVoiceLine(enemy.name);
           playTrainerVoice(`${voiceLine}`, enemyTrainer.isMale);
 
           setText(`${enemy.name} fainted!`);
-          await new Promise(resolve => setTimeout(resolve, 3000));
+          await new Promise((resolve) => setTimeout(resolve, 3000));
 
           const nextPokemon = enemyTrainer.team[nextPokemonIndex];
-          setText(`${enemyTrainer.name} is about to send out ${nextPokemon.name}!`);
-          await new Promise(resolve => setTimeout(resolve, 3000));
+          setText(
+            `${enemyTrainer.name} is about to send out ${nextPokemon.name}!`
+          );
+          await new Promise((resolve) => setTimeout(resolve, 3000));
 
           // Play new Pokemon cry
           if (nextPokemon.cries?.latest) {
@@ -268,17 +290,27 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
 
           setEnemyPokemonIndex(nextPokemonIndex);
           setEnemyHealth(enemyTeamState[nextPokemonIndex].health);
-          setEnemyMove(minmaxMoveDecision(
-            enemyTrainer.team[nextPokemonIndex].moves ?? [], 
-            enemyTrainer.team[nextPokemonIndex], 
-            user
-          ));
+          setEnemyMove(
+            minmaxMoveDecision(
+              enemyTrainer.team[nextPokemonIndex].moves ?? [],
+              enemyTrainer.team[nextPokemonIndex],
+              user
+            )
+          );
         };
 
         sequence();
       }
     }
-  }, [enemyTeamState, enemyPokemonIndex, isBattleEnd, enemy.name, enemyTrainer.name, enemyTrainer.team, user]);
+  }, [
+    enemyTeamState,
+    enemyPokemonIndex,
+    isBattleEnd,
+    enemy.name,
+    enemyTrainer.name,
+    enemyTrainer.team,
+    user,
+  ]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -297,35 +329,37 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
   return (
     <StyledBattleScreenContainer>
       <audio ref={audioRef} src="../../public/trainer_battle.mp3" loop />
-      <div className={`user ${user.name}`} id={Player.User} ref={userRef}>
-        <img src={user.sprites.battle_back} alt="" />
+      <div className={showSwapMenu ? "blurred" : ""}>
+        <div className={`user ${user.name}`} id={Player.User} ref={userRef}>
+          <img src={user.sprites.battle_back} alt="" />
+        </div>
+        <HealthBar
+          player={Player.User}
+          name={user.name}
+          level={100}
+          health={userTeamState[userPokemonIndex].health}
+          maxHealth={userTeamState[userPokemonIndex].maxHealth}
+          sideEffect={userTeamState[userPokemonIndex].sideEffect?.name}
+        />
+        <div className={`enemy ${enemy.name}`} id={Player.Enemy} ref={enemyRef}>
+          <img src={enemy.sprites.battle_front} alt="" />
+        </div>
+        <HealthBar
+          player={Player.Enemy}
+          name={enemy.name}
+          level={100}
+          health={enemyTeamState[enemyPokemonIndex].health}
+          maxHealth={enemy.maxHealth}
+          sideEffect={enemyTeamState[enemyPokemonIndex].sideEffect?.name}
+        />
+        <Footer
+          disabled={isTurnInProgress || isBattleEnd}
+          displayText={text}
+          moveSet={user.moves ?? []}
+          onMoveSelect={(move) => setUserMove(move)}
+          onSwapClick={() => setShowSwapMenu(true)}
+        />
       </div>
-      <HealthBar
-        player={Player.User}
-        name={user.name}
-        level={100}
-        health={userTeamState[userPokemonIndex].health}
-        maxHealth={userTeamState[userPokemonIndex].maxHealth}
-        sideEffect={userTeamState[userPokemonIndex].sideEffect?.name}
-      />
-      <div className={`enemy ${enemy.name}`} id={Player.Enemy} ref={enemyRef}>
-        <img src={enemy.sprites.battle_front} alt="" />
-      </div>
-      <HealthBar
-        player={Player.Enemy}
-        name={enemy.name}
-        level={100}
-        health={enemyTeamState[enemyPokemonIndex].health}
-        maxHealth={enemy.maxHealth}
-        sideEffect={enemyTeamState[enemyPokemonIndex].sideEffect?.name}
-      />
-      <Footer
-        disabled={isTurnInProgress || isBattleEnd}
-        displayText={text}
-        moveSet={user.moves ?? []}
-        onMoveSelect={(move) => setUserMove(move)}
-        onSwapClick={() => setShowSwapMenu(true)}
-      />
       {showSwapMenu && (
         <PokemonSwapMenu
           team={userTrainer.team}
