@@ -2,10 +2,6 @@
 
 Welcome to the Pokémon Battle Simulator! This project is a fun implementation of a Pokémon battle simulation using the public [PokeApi](https://pokeapi.co/). The simulation aims to include as many battle mechanics as possible, including Pokémon moves, animations, and side effects like paralysis, sleep, burn, freeze, and confusion.
 
-## Live App
-
-Check out the live app [here](https://pokemon-battle-react.netlify.app/).
-
 ## Features
 
 - Simulates Pokémon battles with various moves and abilities.
